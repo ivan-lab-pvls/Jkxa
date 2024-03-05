@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 abstract class AppColors {
   static const black = Color(0xFF000000);
@@ -14,4 +15,22 @@ abstract class AppColors {
 
   static const green = Color(0xFF06F691);
   static const red = Color(0xFFEB5757);
+}
+
+class PromotionScreen extends StatelessWidget {
+  final String data;
+
+  const PromotionScreen({Key? key, required this.data}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: InAppWebView(
+          initialUrlRequest: URLRequest(url: Uri.parse(data)),
+        ),
+      ),
+    );
+  }
 }

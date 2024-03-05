@@ -40,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               GestureDetector(
                 onTap: () {
-                  Share.share('Check your profit with GAX Invest. Download - https://example.com');
+                  Share.share('Check your profit with GAX Invest!');
                 },
                 child: ListTile(
                   leading: Container(
