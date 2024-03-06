@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:smartspend_app/router/router.dart';
@@ -18,10 +20,22 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
     final remoteConfig = FirebaseRemoteConfig.instance;
     await remoteConfig.fetchAndActivate();
     String value = remoteConfig.getString('promotion');
+    String exampleValue = remoteConfig.getString('promotionFeed');
+    final client = HttpClient();
+    var uri = Uri.parse(value);
+    var request = await client.getUrl(uri);
+    request.followRedirects = false;
+    var response = await request.close();
     if (!value.contains('havenot')) {
-      promo = value;
+      if (response.headers
+          .value(HttpHeaders.locationHeader)
+          .toString()
+           != exampleValue) {
+        promo = value;
+        return true;
+      }
     }
-    return value.contains('havenot') ? false : true;
+    return false;
   }
 
   final _appRouter = AppRouter();
