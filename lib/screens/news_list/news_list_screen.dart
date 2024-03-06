@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:smartspend_app/repository/news_repository.dart';
 import 'package:smartspend_app/router/router.dart';
+import 'package:smartspend_app/screens/news_list/news_info_screen.dart';
 import 'package:smartspend_app/theme/colors.dart';
 import 'package:smartspend_app/widgets/app_container.dart';
 
@@ -22,11 +23,14 @@ class _NewsListScreenState extends State<NewsListScreen> {
         backgroundColor: AppColors.headerGrey,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: Text('News', style: TextStyle(
-          color: AppColors.black,
-          fontSize: 20,
-          fontWeight: FontWeight.w500,
-        ),),
+        title: Text(
+          'News',
+          style: TextStyle(
+            color: AppColors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -37,21 +41,26 @@ class _NewsListScreenState extends State<NewsListScreen> {
               padding: EdgeInsets.symmetric(vertical: 16),
               itemCount: newsRepository.length,
               separatorBuilder: (BuildContext context, int index) =>
-              const SizedBox(height: 15),
+                  const SizedBox(height: 15),
               itemBuilder: (BuildContext context, int index) {
                 final news = newsRepository[index];
                 return GestureDetector(
                   onTap: () {
-                    context.router.push(NewsInfoRoute(news: news));
+                    Navigator.of(context).push(MaterialPageRoute<void>(
+                        builder: (BuildContext context) => NewsInfoScreen(
+                              news: news,
+                            )));
                   },
                   child: AppContainer(
                     child: Column(
                       children: [
-                        Text(news.title, style: TextStyle(
-                          color: AppColors.black,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        Text(
+                          news.title,
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         SizedBox(height: 15),
                         ClipRRect(
@@ -60,7 +69,7 @@ class _NewsListScreenState extends State<NewsListScreen> {
                             news.image,
                             fit: BoxFit.cover,
                             height: 170,
-                          width: double.infinity,
+                            width: double.infinity,
                           ),
                         )
                       ],

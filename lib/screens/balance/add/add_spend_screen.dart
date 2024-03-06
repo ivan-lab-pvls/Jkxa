@@ -3,8 +3,8 @@ import 'package:chip_list/chip_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smartspend_app/models/bill_model.dart';
-import 'package:smartspend_app/router/router.dart';
 import 'package:smartspend_app/screens/balance/bloc/balance_bloc.dart';
+import 'package:smartspend_app/screens/main/main_screen.dart';
 import 'package:smartspend_app/theme/colors.dart';
 import 'package:smartspend_app/widgets/action_button_widget.dart';
 import 'package:smartspend_app/widgets/app_container.dart';
@@ -116,7 +116,9 @@ class _AddSpendScreenState extends State<AddSpendScreen> {
                               date: DateTime.now(),
                               type: _categories[_currentIndex])),
                     );
-                    context.router.push(MainRoute());
+                  Navigator.of(context).push(MaterialPageRoute<void>(
+                          builder: (BuildContext context) =>
+                              const MainScreen()));
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

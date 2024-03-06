@@ -2,6 +2,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:smartspend_app/router/router.dart';
 
+import 'screens/onboarding/onboarding_screen.dart';
 import 'theme/colors.dart';
 
 class SmartSpendApp extends StatefulWidget {
@@ -49,10 +50,7 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
             if (snapshot.data == true && promo != '') {
               return PromotionScreen(data: promo);
             } else {
-              return MaterialApp.router(
-                routerConfig: _appRouter.config(),
-                debugShowCheckedModeBanner: false,
-              );
+              return const OnboardingScreen();
             }
           }
         },

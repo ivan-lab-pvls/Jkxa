@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:smartspend_app/router/router.dart';
+import 'package:smartspend_app/screens/main/main_screen.dart';
 import 'package:smartspend_app/screens/onboarding/widgets/onboarding_card_widget.dart';
 import 'package:smartspend_app/theme/colors.dart';
 import 'package:smartspend_app/widgets/action_button_widget.dart';
@@ -62,7 +63,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           title: 'Manage your finances with confidence',
                           urlImage: 'assets/images/onboarding/2.png'),
                       OnboardingCardWidget(
-                          title: 'Calculate your investments with our convenient app',
+                          title:
+                              'Calculate your investments with our convenient app',
                           urlImage: 'assets/images/onboarding/3.png'),
                     ],
                   ),
@@ -73,10 +75,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: ActionButtonWidget(
                     text: isLastPage ? 'Get Started' : 'Next',
                     onTap: () {
-                      isLastPage ? context.router.push(MainRoute()) :
-                      controller.nextPage(
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut);
+                      Navigator.of(context).push(MaterialPageRoute<void>(
+                          builder: (BuildContext context) =>
+                              const MainScreen()));
                     },
                     width: 370,
                   ),

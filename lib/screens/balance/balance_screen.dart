@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smartspend_app/models/bill_model.dart';
-import 'package:smartspend_app/router/router.dart';
+import 'package:smartspend_app/screens/analytics/analytics_screen.dart';
+import 'package:smartspend_app/screens/balance/add/add_income_screen.dart';
+import 'package:smartspend_app/screens/balance/add/add_spend_screen.dart';
 import 'package:smartspend_app/screens/balance/bloc/balance_bloc.dart';
 import 'package:smartspend_app/screens/balance/widgets/header_widget.dart';
 import 'package:smartspend_app/theme/colors.dart';
@@ -19,7 +21,6 @@ class BalanceScreen extends StatefulWidget {
 }
 
 class _BalanceScreenState extends State<BalanceScreen> {
-
   List<BillModel> _bills = [];
 
   @override
@@ -46,15 +47,19 @@ class _BalanceScreenState extends State<BalanceScreen> {
                             actions: <CupertinoActionSheetAction>[
                               CupertinoActionSheetAction(
                                 onPressed: () {
-                                  context.router.push(AddIncomeRoute());
-                                  Navigator.pop(context);
+                                  Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                          builder: (BuildContext context) =>
+                                              const AddIncomeScreen()));
                                 },
                                 child: const Text('Add Income'),
                               ),
                               CupertinoActionSheetAction(
                                 onPressed: () {
-                                  context.router.push(AddSpendRoute());
-                                  Navigator.pop(context);
+                                  Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                          builder: (BuildContext context) =>
+                                              const AddSpendScreen()));
                                 },
                                 child: const Text('Add Expense'),
                               ),
@@ -95,7 +100,9 @@ class _BalanceScreenState extends State<BalanceScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        context.router.push(AnalyticsRoute());
+                        Navigator.of(context).push(MaterialPageRoute<void>(
+                            builder: (BuildContext context) =>
+                                const AnalyticsScreen()));
                       },
                       child: Container(
                         width: 180,
@@ -154,45 +161,50 @@ class _BalanceScreenState extends State<BalanceScreen> {
                                         context: context,
                                         builder: (BuildContext context) =>
                                             CupertinoActionSheet(
-                                              message: const Text('Sort'),
-                                              actions: <CupertinoActionSheetAction>[
-                                                CupertinoActionSheetAction(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      _bills = state.bills;
-                                                    });
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text('All'),
-                                                ),
-                                                CupertinoActionSheetAction(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      _bills = state.bills.where((bill) => bill.value > 0).toList();
-
-                                                    });
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text('By Income'),
-                                                ),
-                                                CupertinoActionSheetAction(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      _bills = state.bills.where((bill) => bill.value < 0).toList();
-                                                    });
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text('By Expense'),
-                                                ),
-                                                CupertinoActionSheetAction(
-                                                  isDestructiveAction: true,
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: Text('Cancel'),
-                                                ),
-                                              ],
+                                          message: const Text('Sort'),
+                                          actions: <CupertinoActionSheetAction>[
+                                            CupertinoActionSheetAction(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _bills = state.bills;
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('All'),
                                             ),
+                                            CupertinoActionSheetAction(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _bills = state.bills
+                                                      .where((bill) =>
+                                                          bill.value > 0)
+                                                      .toList();
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('By Income'),
+                                            ),
+                                            CupertinoActionSheetAction(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _bills = state.bills
+                                                      .where((bill) =>
+                                                          bill.value < 0)
+                                                      .toList();
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('By Expense'),
+                                            ),
+                                            CupertinoActionSheetAction(
+                                              isDestructiveAction: true,
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text('Cancel'),
+                                            ),
+                                          ],
+                                        ),
                                       );
                                     },
                                     child: SvgPicture.asset(
@@ -204,7 +216,9 @@ class _BalanceScreenState extends State<BalanceScreen> {
                                 shrinkWrap: true,
                                 physics: NeverScrollableScrollPhysics(),
                                 padding: EdgeInsets.symmetric(vertical: 16),
-                                itemCount: _bills.isNotEmpty ? _bills.length : state.bills.length,
+                                itemCount: _bills.isNotEmpty
+                                    ? _bills.length
+                                    : state.bills.length,
                                 separatorBuilder:
                                     (BuildContext context, int index) =>
                                         const SizedBox(height: 15),
