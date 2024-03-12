@@ -1,3 +1,4 @@
+import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,18 @@ void main() async {
   await FirebaseRemoteConfig.instance.fetchAndActivate();
   await Ntfxs().activate();
   await Stars();
+  AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
+        afDevKey: 'knxyqhoEmbXe4zrXV6ocB7',
+        appId: '6478868357',
+        showDebug: true,
+        timeToWaitForATTUserAuthorization: 50, // for iOS 14.5
+        disableAdvertisingIdentifier: false, // Optional field
+        disableCollectASA: false, //Optional field
+        manualStart: true, ); // Optional field
+
+AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
+
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

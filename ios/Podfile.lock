@@ -1,4 +1,10 @@
 PODS:
+  - appsflyer_sdk (6.13.1):
+    - AppsFlyerFramework (= 6.13.1)
+    - Flutter
+  - AppsFlyerFramework (6.13.1):
+    - AppsFlyerFramework/Main (= 6.13.1)
+  - AppsFlyerFramework/Main (6.13.1)
   - Firebase/CoreOnly (10.22.0):
     - FirebaseCore (= 10.22.0)
   - Firebase/Messaging (10.22.0):
@@ -108,6 +114,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - appsflyer_sdk (from `.symlinks/plugins/appsflyer_sdk/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - firebase_remote_config (from `.symlinks/plugins/firebase_remote_config/ios`)
@@ -122,6 +129,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AppsFlyerFramework
     - Firebase
     - FirebaseABTesting
     - FirebaseCore
@@ -137,6 +145,8 @@ SPEC REPOS:
     - PromisesObjC
 
 EXTERNAL SOURCES:
+  appsflyer_sdk:
+    :path: ".symlinks/plugins/appsflyer_sdk/ios"
   firebase_core:
     :path: ".symlinks/plugins/firebase_core/ios"
   firebase_messaging:
@@ -161,6 +171,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
+  appsflyer_sdk: df2eb770c16a351ecb7b747ca1699494d3a4378f
+  AppsFlyerFramework: 971521cf5b890c2afeab2f2c91734547b8b169ca
   Firebase: 797fd7297b7e1be954432743a0b3f90038e45a71
   firebase_core: 8e100adc478919c6f3224f854ce8fa0bd98e36fd
   firebase_messaging: e41899318940eb03dd3d97f1c04de128019f92d6

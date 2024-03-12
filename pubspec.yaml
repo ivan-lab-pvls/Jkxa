@@ -27,6 +27,7 @@ dependencies:
   get_it: ^7.6.4
   smooth_page_indicator: ^1.1.0
   flutter_launcher_icons: ^0.13.1
+  appsflyer_sdk:
   shared_preferences: ^2.2.2
   sliding_up_panel: ^2.0.0+1
   chip_list: ^2.4.4+8
