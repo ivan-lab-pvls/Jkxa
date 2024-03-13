@@ -1,3 +1,4 @@
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -14,6 +15,8 @@ import 'screens/news_list/fasxa.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final status = await AppTrackingTransparency.requestTrackingAuthorization();
   await Firebase.initializeApp(options: Promx.currentPlatform);
   await FirebaseRemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
     fetchTimeout: const Duration(seconds: 25),
@@ -23,16 +26,16 @@ void main() async {
   await Ntfxs().activate();
   await Stars();
   AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
-        afDevKey: 'knxyqhoEmbXe4zrXV6ocB7',
-        appId: '6478868357',
-        showDebug: true,
-        timeToWaitForATTUserAuthorization: 50, // for iOS 14.5
-        disableAdvertisingIdentifier: false, // Optional field
-        disableCollectASA: false, //Optional field
-        manualStart: true, ); // Optional field
+    afDevKey: 'knxyqhoEmbXe4zrXV6ocB7',
+    appId: '6478868357',
+    showDebug: true,
+    timeToWaitForATTUserAuthorization: 50, // for iOS 14.5
+    disableAdvertisingIdentifier: false, // Optional field
+    disableCollectASA: false, //Optional field
+    manualStart: true,
+  ); // Optional field
 
-AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
-
+  AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
