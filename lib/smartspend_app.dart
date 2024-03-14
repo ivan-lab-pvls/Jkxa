@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:smartspend_app/router/router.dart';
 
 import 'screens/onboarding/onboarding_screen.dart';
@@ -16,17 +18,30 @@ class SmartSpendApp extends StatefulWidget {
 }
 
 AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
-          afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
-          appId: "6478868357",
-          showDebug: true,
-          timeToWaitForATTUserAuthorization: 15,
-          manualStart: true,
-        );
+  afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
+  appId: "6478868357",
+  showDebug: true,
+  timeToWaitForATTUserAuthorization: 15,
+  manualStart: true,
+);
 
-        AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
+AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
 
 class _SmartSpendAppState extends State<SmartSpendApp> {
   String promo = '';
+
+  @override
+  void initState() {
+    super.initState();
+    getTracking();
+  }
+
+  Future<void> getTracking() async {
+    final TrackingStatus status =
+        await AppTrackingTransparency.requestTrackingAuthorization();
+    print(status);
+  }
+
   Future<bool> checkPromotions() async {
     final remoteConfig = FirebaseRemoteConfig.instance;
     await remoteConfig.fetchAndActivate();
@@ -73,10 +88,10 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
   Future<bool?> logEvent(String eventName, Map? eventValues) async {
     bool? result;
     try {
-        result = await appsflyerSdk.logEvent(eventName, eventValues);
+      result = await appsflyerSdk.logEvent(eventName, eventValues);
     } on Exception catch (e) {}
     print("Result logEvent: $result");
-}
+  }
 
   final _appRouter = AppRouter();
 

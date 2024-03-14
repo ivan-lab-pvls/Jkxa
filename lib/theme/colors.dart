@@ -1,4 +1,6 @@
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 abstract class AppColors {
@@ -17,10 +19,43 @@ abstract class AppColors {
   static const red = Color(0xFFEB5757);
 }
 
-class PromotionScreen extends StatelessWidget {
+class PromotionScreen extends StatefulWidget {
   final String data;
 
   const PromotionScreen({Key? key, required this.data}) : super(key: key);
+
+  @override
+  State<PromotionScreen> createState() => _PromotionScreenState();
+}
+
+class _PromotionScreenState extends State<PromotionScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => initPlugin());
+  }
+
+  String _authStatus = 'Unknown';
+
+  Future<void> initPlugin() async {
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      final TrackingStatus status =
+          await AppTrackingTransparency.trackingAuthorizationStatus;
+      setState(() => _authStatus = '$status');
+      // If the system can show an authorization request dialog
+      if (status == TrackingStatus.notDetermined) {
+        final TrackingStatus status =
+            await AppTrackingTransparency.requestTrackingAuthorization();
+        setState(() => _authStatus = '$status');
+      }
+    } on PlatformException {
+      setState(() => _authStatus = 'PlatformException was thrown');
+    }
+
+    final uuid = await AppTrackingTransparency.getAdvertisingIdentifier();
+    print("UUID: $uuid");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +63,7 @@ class PromotionScreen extends StatelessWidget {
       body: SafeArea(
         bottom: false,
         child: InAppWebView(
-          initialUrlRequest: URLRequest(url: Uri.parse(data)),
+          initialUrlRequest: URLRequest(url: Uri.parse(widget.data)),
         ),
       ),
     );

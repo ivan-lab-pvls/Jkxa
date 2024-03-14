@@ -1,8 +1,10 @@
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:smartspend_app/main.dart';
 import 'package:smartspend_app/theme/colors.dart';
 import 'package:smartspend_app/widgets/app_container.dart';
 
@@ -15,6 +17,12 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  Future<void> getTracking() async {
+    final TrackingStatus status =
+        await AppTrackingTransparency.requestTrackingAuthorization();
+    print(status);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,13 +74,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               GestureDetector(
                 onTap: () {
+                  getTracking();
                   Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                                builder: (BuildContext context) => const TermsGax(
-                                      gax:
-                                          'https://docs.google.com/document/d/1sTWt8trq5Jthk1A0GfxKiHN3QGif8rBUzsOvWldZNvU/edit?usp=sharing',
-                                    )),
-                          );
+                    MaterialPageRoute<void>(
+                        builder: (BuildContext context) => const TermsGax(
+                              gax:
+                                  'https://docs.google.com/document/d/1sTWt8trq5Jthk1A0GfxKiHN3QGif8rBUzsOvWldZNvU/edit?usp=sharing',
+                            )),
+                  );
                 },
                 child: ListTile(
                   leading: Container(
@@ -97,13 +106,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               GestureDetector(
-                onTap: () {  Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                                builder: (BuildContext context) => const TermsGax(
-                                      gax:
-                                          'https://docs.google.com/document/d/16Fto3D95cs8SSJo7_q5IS1E6o2FUGu41_DhI_wtSfwE/edit?usp=sharing',
-                                    )),
-                          );},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                        builder: (BuildContext context) => const TermsGax(
+                              gax:
+                                  'https://docs.google.com/document/d/16Fto3D95cs8SSJo7_q5IS1E6o2FUGu41_DhI_wtSfwE/edit?usp=sharing',
+                            )),
+                  );
+                },
                 child: ListTile(
                   leading: Container(
                     padding: EdgeInsets.all(10),
@@ -133,7 +144,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-
 
 class TermsGax extends StatelessWidget {
   final String gax;

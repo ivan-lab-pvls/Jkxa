@@ -1,4 +1,3 @@
-import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -9,14 +8,11 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartspend_app/screens/balance/bloc/balance_bloc.dart';
 import 'package:smartspend_app/smartspend_app.dart';
-
 import 'screens/news_list/config.dart';
 import 'screens/news_list/fasxa.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final status = await AppTrackingTransparency.requestTrackingAuthorization();
   await Firebase.initializeApp(options: Promx.currentPlatform);
   await FirebaseRemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
     fetchTimeout: const Duration(seconds: 25),
@@ -48,6 +44,8 @@ void main() async {
     child: SmartSpendApp(),
   ));
 }
+
+
 
 late SharedPreferences prefVTX;
 final rateVTX = InAppReview.instance;
