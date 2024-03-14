@@ -24,7 +24,7 @@ void main() async {
   AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
     afDevKey: 'knxyqhoEmbXe4zrXV6ocB7',
     appId: '6478868357',
-    showDebug: true,
+    showDebug: false,
     timeToWaitForATTUserAuthorization: 50, // for iOS 14.5
     disableAdvertisingIdentifier: false, // Optional field
     disableCollectASA: false, //Optional field
@@ -32,7 +32,10 @@ void main() async {
   ); // Optional field
 
   AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
-
+  appsflyerSdk.initSdk(
+      registerConversionDataCallback: true,
+      registerOnAppOpenAttributionCallback: true,
+      registerOnDeepLinkingCallback: true);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -44,8 +47,6 @@ void main() async {
     child: SmartSpendApp(),
   ));
 }
-
-
 
 late SharedPreferences prefVTX;
 final rateVTX = InAppReview.instance;

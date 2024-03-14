@@ -24,7 +24,6 @@ AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
   timeToWaitForATTUserAuthorization: 15,
   manualStart: true,
 );
-
 AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
 
 class _SmartSpendAppState extends State<SmartSpendApp> {
@@ -34,6 +33,7 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
   void initState() {
     super.initState();
     getTracking();
+    
   }
 
   Future<void> getTracking() async {
@@ -58,13 +58,13 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
         AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
           afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
           appId: "6478868357",
-          showDebug: true,
+          showDebug: false,
           timeToWaitForATTUserAuthorization: 15,
           manualStart: true,
         );
 
         AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
-
+         appsflyerSdk.startSDK();
         // Init of AppsFlyer SDK
         appsflyerSdk.initSdk(
           registerConversionDataCallback: true,
@@ -73,6 +73,8 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
         );
 
         appsflyerSdk.startSDK();
+        
+
 
         appsflyerSdk.logEvent("CustomEvent", {
           "log": "open",
