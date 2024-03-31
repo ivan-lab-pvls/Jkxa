@@ -5,6 +5,7 @@ import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartspend_app/router/router.dart';
 
 import 'screens/onboarding/onboarding_screen.dart';
@@ -33,7 +34,6 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
   void initState() {
     super.initState();
     getTracking();
-    
   }
 
   Future<void> getTracking() async {
@@ -52,47 +52,76 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
     var request = await client.getUrl(uri);
     request.followRedirects = false;
     var response = await request.close();
+
     if (!value.contains('havenot')) {
       if (response.headers.value(HttpHeaders.locationHeader).toString() !=
           exampleValue) {
-        AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
-          afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
-          appId: "6478868357",
-          showDebug: false,
-          timeToWaitForATTUserAuthorization: 15,
-          manualStart: true,
-        );
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        bool appsFlyerExecuted = prefs.getBool('appsFlyerExecuted') ?? false;
+        String? campaignId;
+        if (!appsFlyerExecuted) {
+          AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
+            afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
+            appId: "6478868357",
+            showDebug: false,
+            timeToWaitForATTUserAuthorization: 15,
+            manualStart: true,
+          );
 
-        AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
-         appsflyerSdk.startSDK();
-        // Init of AppsFlyer SDK
-        appsflyerSdk.initSdk(
-          registerConversionDataCallback: true,
-          registerOnAppOpenAttributionCallback: true,
-          registerOnDeepLinkingCallback: true,
-        );
+          AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
+          appsflyerSdk.startSDK();
+          appsflyerSdk.initSdk(
+            registerConversionDataCallback: true,
+            registerOnAppOpenAttributionCallback: true,
+            registerOnDeepLinkingCallback: true,
+          );
 
-        appsflyerSdk.startSDK();
-        
+          appsflyerSdk.onInstallConversionData((data) {
+            setState(() {
+              campaignId = data['campaignId'];
+            });
+            campaignId = data['campaignId'];
+          });
 
-
-        appsflyerSdk.logEvent("CustomEvent", {
-          "log": "open",
-        });
-
-        promo = value;
+          appsflyerSdk.onAppOpenAttribution((data) {});
+          appsflyerSdk.onDeepLinking((DeepLinkResult dp) {
+            switch (dp.status) {
+              case Status.FOUND:
+                print("Unified Deep Link: ${dp.deepLink?.toString()}");
+                break;
+              case Status.NOT_FOUND:
+                print("Unified Deep Link not found");
+                break;
+              case Status.ERROR:
+                print("Unified Deep Link error: ${dp.error}");
+                break;
+              case Status.PARSE_ERROR:
+                print("Unified Deep Link parsing error");
+                break;
+            }
+          });
+          appsflyerSdk.logEvent("CustomEvent", {
+            "log": "open",
+          });
+          prefs.setBool('appsFlyerExecuted', true);
+        }
+        String dataFor = '';
+        try {
+          dataFor = remoteConfig.getString(campaignId ?? 'promotion');
+          if (dataFor != value && dataFor.contains('http')) {
+            promo = '$dataFor&campaignId=$campaignId';
+            return true;
+          }
+        } catch (e) {
+          promo = '$value&campaignId=$campaignId';
+          return true;
+        }
+        promo = '$value&campaignId=$campaignId';
         return true;
       }
     }
-    return false;
-  }
 
-  Future<bool?> logEvent(String eventName, Map? eventValues) async {
-    bool? result;
-    try {
-      result = await appsflyerSdk.logEvent(eventName, eventValues);
-    } on Exception catch (e) {}
-    print("Result logEvent: $result");
+    return false;
   }
 
   final _appRouter = AppRouter();

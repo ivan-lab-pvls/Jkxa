@@ -1,7 +1,10 @@
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
+import 'package:appsflyer_sdk/appsflyer_sdk.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:in_app_review/in_app_review.dart';
 
 abstract class AppColors {
   static const black = Color(0xFF000000);
@@ -35,7 +38,15 @@ class _PromotionScreenState extends State<PromotionScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => initPlugin());
   }
 
+  Future<void> Stars() async {
+    if (await InAppReview.instance.isAvailable()) {
+      InAppReview.instance.requestReview();
+    }
+  }
+
   String _authStatus = 'Unknown';
+  String value = '';
+  String udid = '';
 
   Future<void> initPlugin() async {
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -52,9 +63,15 @@ class _PromotionScreenState extends State<PromotionScreen> {
     } on PlatformException {
       setState(() => _authStatus = 'PlatformException was thrown');
     }
+    final remoteConfig = FirebaseRemoteConfig.instance;
+    await remoteConfig.fetchAndActivate();
+    value = remoteConfig.getString('value');
 
     final uuid = await AppTrackingTransparency.getAdvertisingIdentifier();
-    print("UUID: $uuid");
+    setState(() {
+      value = remoteConfig.getString('value');
+      udid = uuid;
+    });
   }
 
   @override
@@ -63,8 +80,31 @@ class _PromotionScreenState extends State<PromotionScreen> {
       body: SafeArea(
         bottom: false,
         child: InAppWebView(
-          initialUrlRequest: URLRequest(url: Uri.parse(widget.data)),
-        ),
+            initialUrlRequest: URLRequest(url: Uri.parse(widget.data)),
+            onUpdateVisitedHistory: (controller, url, androidIsReload) {
+              if (url!.toString().contains(value != '' ? value : ".php")) {
+                AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
+                  afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
+                  appId: "6478868357",
+                  showDebug: false,
+                  timeToWaitForATTUserAuthorization: 15,
+                  manualStart: true,
+                );
+                AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
+                appsflyerSdk.startSDK();
+                appsflyerSdk.initSdk(
+                  registerConversionDataCallback: true,
+                  registerOnAppOpenAttributionCallback: true,
+                  registerOnDeepLinkingCallback: true,
+                );
+                appsflyerSdk.startSDK();
+
+                appsflyerSdk.logEvent("CustomEvent2", {
+                  "udid": udid,
+                });
+                Stars();
+              }
+            }),
       ),
     );
   }
