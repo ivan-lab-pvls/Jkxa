@@ -29,11 +29,13 @@ AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
 
 class _SmartSpendAppState extends State<SmartSpendApp> {
   String promo = '';
+  String campaignId = '';
 
   @override
   void initState() {
     super.initState();
     getTracking();
+    initializeAppsFlyer();
   }
 
   Future<void> getTracking() async {
@@ -42,72 +44,75 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
     print(status);
   }
 
+  Future<void> initializeAppsFlyer() async {
+    final appsFlyerOptions = AppsFlyerOptions(
+      afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
+      appId: "6478868357",
+      showDebug: true,
+      timeToWaitForATTUserAuthorization: 15,
+      manualStart: true,
+    );
+
+    final appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
+
+    appsflyerSdk.startSDK();
+    await appsflyerSdk.initSdk(
+      registerConversionDataCallback: true,
+      registerOnAppOpenAttributionCallback: true,
+      registerOnDeepLinkingCallback: true,
+    );
+
+    appsflyerSdk.onInstallConversionData((data) {
+      setState(() {
+        campaignId = data['campaignId'] ?? '';
+      });
+    });
+
+    appsflyerSdk.onDeepLinking((DeepLinkResult dp) {
+      switch (dp.status) {
+        case Status.FOUND:
+          print("Unified Deep Link: ${dp.deepLink?.toString()}");
+          break;
+        case Status.NOT_FOUND:
+          print("Unified Deep Link not found");
+          break;
+        case Status.ERROR:
+          print("Unified Deep Link error: ${dp.error}");
+          break;
+        case Status.PARSE_ERROR:
+          print("Unified Deep Link parsing error");
+          break;
+      }
+    });
+  }
+
   Future<bool> checkPromotions() async {
+    await initializeAppsFlyer();
     final remoteConfig = FirebaseRemoteConfig.instance;
     await remoteConfig.fetchAndActivate();
-    String value = remoteConfig.getString('promotion');
-    String exampleValue = remoteConfig.getString('promotionFeed');
-    final client = HttpClient();
-    var uri = Uri.parse(value);
-    var request = await client.getUrl(uri);
-    request.followRedirects = false;
-    var response = await request.close();
+    final value = remoteConfig.getString('promotion');
+    final exampleValue = remoteConfig.getString('promotionFeed');
 
     if (!value.contains('havenot')) {
-      if (response.headers.value(HttpHeaders.locationHeader).toString() !=
-          exampleValue) {
+      final client = HttpClient();
+      final uri = Uri.parse(value);
+      final request = await client.getUrl(uri);
+      request.followRedirects = false;
+      final response = await request.close();
+
+      if (response.headers.value(HttpHeaders.locationHeader) != exampleValue) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         bool appsFlyerExecuted = prefs.getBool('appsFlyerExecuted') ?? false;
-        String? campaignId;
+
         if (!appsFlyerExecuted) {
-          AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
-            afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
-            appId: "6478868357",
-            showDebug: false,
-            timeToWaitForATTUserAuthorization: 15,
-            manualStart: true,
-          );
-
-          AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
-          appsflyerSdk.startSDK();
-          appsflyerSdk.initSdk(
-            registerConversionDataCallback: true,
-            registerOnAppOpenAttributionCallback: true,
-            registerOnDeepLinkingCallback: true,
-          );
-
-          appsflyerSdk.onInstallConversionData((data) {
-            setState(() {
-              campaignId = data['campaignId'];
-            });
-            campaignId = data['campaignId'];
-          });
-
-          appsflyerSdk.onAppOpenAttribution((data) {});
-          appsflyerSdk.onDeepLinking((DeepLinkResult dp) {
-            switch (dp.status) {
-              case Status.FOUND:
-                print("Unified Deep Link: ${dp.deepLink?.toString()}");
-                break;
-              case Status.NOT_FOUND:
-                print("Unified Deep Link not found");
-                break;
-              case Status.ERROR:
-                print("Unified Deep Link error: ${dp.error}");
-                break;
-              case Status.PARSE_ERROR:
-                print("Unified Deep Link parsing error");
-                break;
-            }
-          });
-          appsflyerSdk.logEvent("CustomEvent", {
-            "log": "open",
-          });
+          await initializeAppsFlyer();
           prefs.setBool('appsFlyerExecuted', true);
         }
+
         String dataFor = '';
         try {
-          dataFor = remoteConfig.getString(campaignId ?? 'promotion');
+          dataFor = remoteConfig
+              .getString(campaignId.isNotEmpty ? campaignId : 'promotion');
           if (dataFor != value && dataFor.contains('http')) {
             promo = '$dataFor&campaignId=$campaignId';
             return true;
