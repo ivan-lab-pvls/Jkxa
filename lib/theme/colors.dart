@@ -76,6 +76,7 @@ class _PromotionScreenState extends State<PromotionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.data);
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -86,9 +87,11 @@ class _PromotionScreenState extends State<PromotionScreen> {
                 AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
                   afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
                   appId: "6478868357",
-                  showDebug: false,
-                  timeToWaitForATTUserAuthorization: 15,
-                  manualStart: true,
+                  showDebug: true,
+                  timeToWaitForATTUserAuthorization: 50, // for iOS 14.5
+                  disableAdvertisingIdentifier: true, // Optional field
+                  disableCollectASA: true, //Optional field
+                  // manualStart: true,
                 );
                 AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
                 appsflyerSdk.startSDK();

@@ -24,22 +24,57 @@ void main() async {
   AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
     afDevKey: 'knxyqhoEmbXe4zrXV6ocB7',
     appId: '6478868357',
-    showDebug: false,
-    timeToWaitForATTUserAuthorization: 50, // for iOS 14.5
-    disableAdvertisingIdentifier: false, // Optional field
-    disableCollectASA: false, //Optional field
+    showDebug: true,
+    timeToWaitForATTUserAuthorization: 50,
+    disableAdvertisingIdentifier: false,
+    disableCollectASA: true,
     manualStart: true,
-  ); // Optional field
+  );
 
   AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
+
   appsflyerSdk.initSdk(
       registerConversionDataCallback: true,
       registerOnAppOpenAttributionCallback: true,
       registerOnDeepLinkingCallback: true);
+
+  // appsflyerSdk.onInstallConversionData((data) {
+  //   print("Conversion Data Success:");
+  //   data.forEach((key, value) {
+  //     print("$key: $value");
+  //   });
+  // });
+
+  // appsflyerSdk.onAppOpenAttribution((data) {
+  //   print("App Open Attribution:");
+  //   data.forEach((key, value) {
+  //     print("$key: $value");
+  //   });
+  // });
+
+  appsflyerSdk.onDeepLinking((DeepLinkResult dp) {
+    switch (dp.status) {
+      case Status.FOUND:
+        String deepLink = dp.deepLink?.toString() ?? '';
+        print("Deep Link: $deepLink");
+        break;
+      case Status.NOT_FOUND:
+        print("Deep Link not found");
+        break;
+      case Status.ERROR:
+        print("Deep Link error: ${dp.error}");
+        break;
+      case Status.PARSE_ERROR:
+        print("Deep Link parsing error");
+        break;
+    }
+  });
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
   runApp(MultiBlocProvider(
     providers: [
       BlocProvider<BalanceBloc>(create: (context) => BalanceBloc()),

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
@@ -22,15 +23,62 @@ AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
   afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
   appId: "6478868357",
   showDebug: true,
-  timeToWaitForATTUserAuthorization: 15,
-  manualStart: true,
+  timeToWaitForATTUserAuthorization: 50,
+  disableAdvertisingIdentifier: true,
+  disableCollectASA: true,
 );
 AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
+String campaignx = '';
+String campaignID = '';
+
+class DeepLink {
+  DeepLink(this._clickEvent);
+  final Map<String, dynamic> _clickEvent;
+  Map<String, dynamic> get clickEvent => _clickEvent;
+  String? get deepLinkValue => _clickEvent["deep_link_value"] as String;
+  String? get matchType => _clickEvent["match_type"] as String;
+  String? get clickHttpReferrer => _clickEvent["click_http_referrer"] as String;
+  String? get mediaSource => _clickEvent["media_source"] as String;
+  String? get campaign => _clickEvent["campaign"] as String;
+  String? get campaignId => _clickEvent["campaign_id"] as String;
+  String? get afSub1 => _clickEvent["af_sub1"] as String;
+  String? get afSub2 => _clickEvent["af_sub2"] as String;
+  String? get afSub3 => _clickEvent["af_sub3"] as String;
+  String? get afSub4 => _clickEvent["af_sub4"] as String;
+  String? get afSub5 => _clickEvent["af_sub5"] as String;
+  bool get isDeferred => _clickEvent["is_deferred"] as bool;
+
+  @override
+  String toString() {
+    return 'DeepLink: ${jsonEncode(_clickEvent)}';
+  }
+
+  String createParams() {
+    if (campaign != null) {
+      campaignx = 'campaign=$campaign';
+    } else {
+      campaignx = 'test';
+    }
+    if (campaignId != null) {
+      campaignID = 'campaignId=$campaignId';
+    } else {
+      campaignID = 'test2';
+    }
+    return '&$campaignx&$campaignID';
+  }
+}
+
+late DeepLink deepLink;
 
 class _SmartSpendAppState extends State<SmartSpendApp> {
   String promo = '';
+  String afStatus = '';
+  String urlParameters = '';
   String campaignId = '';
+  String isFirstLaunch = '';
 
+  Map<String, dynamic>? payload;
+  Map<String, dynamic>? atttributionPayload;
   @override
   void initState() {
     super.initState();
@@ -45,49 +93,62 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
   }
 
   Future<void> initializeAppsFlyer() async {
-    final appsFlyerOptions = AppsFlyerOptions(
+    AppsFlyerOptions appsFlyerOptions = AppsFlyerOptions(
       afDevKey: "knxyqhoEmbXe4zrXV6ocB7",
       appId: "6478868357",
       showDebug: true,
-      timeToWaitForATTUserAuthorization: 15,
-      manualStart: true,
+      timeToWaitForATTUserAuthorization: 50,
+      disableAdvertisingIdentifier: true,
+      disableCollectASA: true,
     );
+    AppsflyerSdk appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
 
-    final appsflyerSdk = AppsflyerSdk(appsFlyerOptions);
-
-    appsflyerSdk.startSDK();
     await appsflyerSdk.initSdk(
       registerConversionDataCallback: true,
       registerOnAppOpenAttributionCallback: true,
       registerOnDeepLinkingCallback: true,
     );
-
+    appsflyerSdk.startSDK();
     appsflyerSdk.onInstallConversionData((data) {
+      payload = data['payload'];
+      afStatus = payload!['af_status'] ?? '';
+      isFirstLaunch = payload!['is_first_launch'] ?? 'false';
       setState(() {
-        campaignId = data['campaignId'] ?? '';
+        urlParameters = '&is_first_launch=$isFirstLaunch&af_status=$afStatus';
+      });
+      deepLink = DeepLink(data);
+      postbacks = deepLink.createParams();
+    });
+
+    appsflyerSdk.onAppOpenAttribution((data) {
+      print("App Open Attribution:");
+      data.forEach((key, value) {
+        print("$key: $value");
       });
     });
 
-    appsflyerSdk.onDeepLinking((DeepLinkResult dp) {
+    appsflyerSdk?.onDeepLinking((DeepLinkResult dp) {
       switch (dp.status) {
         case Status.FOUND:
-          print("Unified Deep Link: ${dp.deepLink?.toString()}");
+          print(dp.deepLink?.toString());
+          print("deep link value: ${dp.deepLink?.deepLinkValue}");
           break;
         case Status.NOT_FOUND:
-          print("Unified Deep Link not found");
+          print("deep link not found");
           break;
         case Status.ERROR:
-          print("Unified Deep Link error: ${dp.error}");
+          print("deep link error: ${dp.error}");
           break;
         case Status.PARSE_ERROR:
-          print("Unified Deep Link parsing error");
+          print("deep link status parsing error");
           break;
       }
     });
   }
 
+  String postbacks = '';
+
   Future<bool> checkPromotions() async {
-    await initializeAppsFlyer();
     final remoteConfig = FirebaseRemoteConfig.instance;
     await remoteConfig.fetchAndActivate();
     final value = remoteConfig.getString('promotion');
@@ -101,27 +162,24 @@ class _SmartSpendAppState extends State<SmartSpendApp> {
       final response = await request.close();
 
       if (response.headers.value(HttpHeaders.locationHeader) != exampleValue) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        bool appsFlyerExecuted = prefs.getBool('appsFlyerExecuted') ?? false;
+        String dataFor = value;
 
-        if (!appsFlyerExecuted) {
-          await initializeAppsFlyer();
-          prefs.setBool('appsFlyerExecuted', true);
-        }
-
-        String dataFor = '';
         try {
           dataFor = remoteConfig
               .getString(campaignId.isNotEmpty ? campaignId : 'promotion');
           if (dataFor != value && dataFor.contains('http')) {
-            promo = '$dataFor&campaignId=$campaignId';
+            appsflyerSdk.logEvent("opened", {
+              "lnk": '$dataFor$urlParameters',
+            });
             return true;
           }
         } catch (e) {
-          promo = '$value&campaignId=$campaignId';
+          promo =
+              '$dataFor&is_first_launch=$isFirstLaunch&af_status=$afStatus$postbacks';
           return true;
         }
-        promo = '$value&campaignId=$campaignId';
+        promo =
+            '$dataFor&is_first_launch=$isFirstLaunch&af_status=$afStatus$postbacks';
         return true;
       }
     }
